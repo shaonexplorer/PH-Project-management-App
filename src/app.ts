@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Request, Response, NextFunction } from "express";
 import { projectsRouter } from "./modules/projects/projects.routes";
+import { authRouter } from "./modules/auth/auth.routes";
+import { tasksRouter } from "./modules/Tasks/tasks.routes";
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/projects", projectsRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/tasks", tasksRouter);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(404).json({
@@ -32,6 +36,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+  console.error("Error:", error);
   res.status(error.status || 400).json({
     status: error.status,
     success: false,

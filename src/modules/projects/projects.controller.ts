@@ -2,16 +2,34 @@ import { NextFunction, Request, Response } from "express";
 import { ProjectsService } from "./projects.service";
 import { catchAsync } from "../../app/utils/catch-async";
 
-const createProject = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    // Logic to create a new project
+import { CreateProjectDto } from "./projects.dto";
 
-    const result = await ProjectsService.CreateProject(req, res);
+export const createProject = catchAsync(async (req: Request, res: Response) => {
+  const dto: CreateProjectDto = req.body;
+  const creatorId = (req as any).user?.id;
+  const project = await ProjectsService.createProject(dto, creatorId);
+  res.status(201).json({ project });
+});
 
-    res.status(201).json({ message: "Project created successfully" });
-  },
-);
+import { UpdateProjectDto } from "./projects.dto";
+
+// Update a project by ID
+export const updateProject = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const dto: UpdateProjectDto = req.body;
+  const project = await ProjectsService.updateProject(id, dto);
+  res.status(200).json({ project });
+});
+
+// Delete a project by ID
+export const deleteProject = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const project = await ProjectsService.deleteProject(id);
+  res.status(200).json({ project });
+});
 
 export const projectsController = {
   createProject,
+  updateProject,
+  deleteProject,
 };

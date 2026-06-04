@@ -10,6 +10,7 @@ router.get("/", (req, res) => {
 });
 
 router.post("/create", authenticate, projectsController.createProject);
+router.post("/:projectId/members", authenticate, projectsController.addMember);
 
 // Update a single project by ID
 router.put("/:id", authenticate, projectsController.updateProject);

@@ -28,7 +28,7 @@ export const AuthService = {
         name,
         email,
         passwordHash,
-        ...(role && { role: role as any }),
+        role: role as any,
       },
     });
     // Omit passwordHash before returning

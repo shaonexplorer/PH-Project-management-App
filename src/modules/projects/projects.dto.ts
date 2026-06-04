@@ -9,3 +9,9 @@ export interface UpdateProjectDto {
   description?: string;
   deadline?: string; // ISO date string
 }
+
+export interface AddProjectMemberDto {
+  name: string;
+  email: string;
+  password: string;
+}

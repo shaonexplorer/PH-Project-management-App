@@ -1,7 +1,56 @@
 import { prisma } from "../../app/lib/prisma";
+import { hashPassword } from "../../utils/password";
 import { CreateProjectDto, UpdateProjectDto } from "./projects.dto";
 
 export const ProjectsService = {
+  /**
+   * Add a member to a project.
+   * @param projectId ID of the project
+   * @param dto object containing userId to add
+   */
+  async addMember(
+    projectId: string,
+    dto: { name: string; email: string; password: string },
+  ) {
+    const { name, email, password } = dto;
+    // Perform all operations atomically within a transaction
+    const member = await prisma.$transaction(async (tx) => {
+      // Validate project exists
+      const project = await tx.project.findUnique({ where: { id: projectId } });
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Find or create the user
+      let user = await tx.user.findUnique({ where: { email } });
+      if (!user) {
+        const passwordHash = await hashPassword(password);
+        user = await tx.user.create({
+          data: {
+            name,
+            email,
+            passwordHash,
+            role: 'Team_Member' as any,
+          },
+        });
+      }
+
+      // Check for existing membership
+      const existing = await tx.projectMember.findUnique({
+        where: { projectId_userId: { projectId, userId: user.id } },
+      });
+      if (existing) {
+        throw new Error('User is already a member of this project');
+      }
+
+      // Create the membership record
+      return await tx.projectMember.create({
+        data: { projectId, userId: user.id },
+      });
+    });
+    return member;
+  },
+
   /**
    * Create a new project.
    * @param dto Data Transfer Object with project fields

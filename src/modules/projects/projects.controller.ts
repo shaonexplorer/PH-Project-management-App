@@ -28,8 +28,23 @@ export const deleteProject = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ project });
 });
 
+import { AddProjectMemberDto } from "./projects.dto";
+
+export const addMember = catchAsync(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const { name, email, password } = req.body as AddProjectMemberDto;
+  const member = await ProjectsService.addMember(projectId, {
+    name,
+    email,
+    password,
+  });
+  res.status(201).json({ member });
+});
+
 export const projectsController = {
+  // existing methods will be added after this line
   createProject,
   updateProject,
   deleteProject,
+  addMember,
 };

@@ -75,4 +75,18 @@ export const TasksService = {
   async deleteTask(id: string) {
     return prisma.task.delete({ where: { id } });
   },
+
+  /**
+   * Assign a member to a task.
+   * @param taskId - ID of the task to assign.
+   * @param memberId - ID of the member to assign to the task.
+   */
+  async assignMember(taskId: string, memberId: string) {
+    // Ensure both task and member exist could be added here.
+    // Update the task's assignee relationship.
+    return prisma.task.update({
+      where: { id: taskId },
+      data: { assignee: { connect: { id: memberId } } },
+    });
+  },
 };

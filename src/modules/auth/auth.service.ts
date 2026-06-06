@@ -2,6 +2,9 @@ import { User } from "../../../generated/prisma/client";
 import { prisma } from "../../app/lib/prisma";
 import { hashPassword, comparePassword } from "../../utils/password";
 import jwt from "jsonwebtoken";
+import "dotenv/config";
+
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION as string;
 
 interface RegisterDto {
   name: string;
@@ -55,7 +58,7 @@ export const AuthService = {
     const token = jwt.sign(
       { sub: user.id, role: user.role },
       process.env.JWT_SECRET as string,
-      { expiresIn: "1h" },
+      { expiresIn: "24h" },
     );
     // Strip passwordHash before returning
     const { passwordHash: _ph, ...rest } = user as any;

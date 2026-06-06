@@ -43,10 +43,21 @@ export const deleteTask = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ task });
 });
 
+/**
+ * Assign a member to a task.
+ * Expects taskId and memberId as URL params.
+ */
+export const assignMember = catchAsync(async (req: Request, res: Response) => {
+  const { taskId, memberId } = req.params;
+  const task = await TasksService.assignMember(taskId, memberId);
+  res.status(200).json({ task });
+});
+
 export const tasksController = {
   createTask,
   getTask,
   listTasks,
   updateTask,
   deleteTask,
+  assignMember,
 };

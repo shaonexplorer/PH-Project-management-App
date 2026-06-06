@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { ProjectsService } from "./projects.service";
-import { catchAsync } from "../../app/utils/catch-async";
+import { ProjectsService } from "./projects.service.js";
+import { catchAsync } from "../../app/utils/catch-async.js";
 
-import { CreateProjectDto } from "./projects.dto";
+import { CreateProjectDto } from "./projects.dto.js";
 
 export const createProject = catchAsync(async (req: Request, res: Response) => {
   const dto: CreateProjectDto = req.body;

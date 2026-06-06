@@ -1,5 +1,5 @@
-import { prisma } from "../../app/lib/prisma";
-import { CreateTaskDto, UpdateTaskDto } from "./tasks.dto";
+import { prisma } from "../../app/lib/prisma.js";
+import { CreateTaskDto, UpdateTaskDto } from "./tasks.dto.js";
 
 export const TasksService = {
   /**
@@ -17,7 +17,9 @@ export const TasksService = {
         description: dto.description,
         dueDate: new Date(dto.deadline),
         project: { connect: { id: dto.projectId } },
-        ...(dto.assignedMemberId && { assignee: { connect: { id: dto.assignedMemberId } } }),
+        ...(dto.assignedMemberId && {
+          assignee: { connect: { id: dto.assignedMemberId } },
+        }),
         priority: dto.priority,
         status: dto.status,
         // No createdBy field in Task model; omit

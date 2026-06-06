@@ -1,4 +1,4 @@
-import { prisma } from "../../app/lib/prisma";
+import { prisma } from "../../app/lib/prisma.js";
 export const TasksService = {
     /**
      * Create a new task.
@@ -14,7 +14,9 @@ export const TasksService = {
                 description: dto.description,
                 dueDate: new Date(dto.deadline),
                 project: { connect: { id: dto.projectId } },
-                ...(dto.assignedMemberId && { assignee: { connect: { id: dto.assignedMemberId } } }),
+                ...(dto.assignedMemberId && {
+                    assignee: { connect: { id: dto.assignedMemberId } },
+                }),
                 priority: dto.priority,
                 status: dto.status,
                 // No createdBy field in Task model; omit

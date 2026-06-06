@@ -1,8 +1,8 @@
-import app from "./app";
+import app from "./app.js";
 import { Server } from "http";
 
 import "dotenv/config";
-import { prisma } from "./app/lib/prisma";
+import { prisma } from "./app/lib/prisma.js";
 
 const port = process.env.PORT;
 

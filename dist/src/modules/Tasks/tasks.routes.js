@@ -1,6 +1,6 @@
 import express from "express";
-import { tasksController } from "./tasks.controller";
-import { authenticate } from "../../middleware/auth.middleware";
+import { tasksController } from "./tasks.controller.js";
+import { authenticate } from "../../middleware/auth.middleware.js";
 const router = express.Router();
 // Create a new task (protected)
 router.post("/", authenticate, tasksController.createTask);

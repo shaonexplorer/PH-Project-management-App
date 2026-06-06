@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { TasksService } from "./tasks.service";
-import { catchAsync } from "../../app/utils/catch-async";
-import { CreateTaskDto, UpdateTaskDto } from "./tasks.dto";
+import { TasksService } from "./tasks.service.js";
+import { catchAsync } from "../../app/utils/catch-async.js";
+import { CreateTaskDto, UpdateTaskDto } from "./tasks.dto.js";
 
 // Create a new task
 export const createTask = catchAsync(async (req: Request, res: Response) => {

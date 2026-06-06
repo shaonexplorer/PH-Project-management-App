@@ -1,5 +1,5 @@
-import { AuthService } from './auth.service';
-import { catchAsync } from '../../app/utils/catch-async';
+import { AuthService } from "./auth.service.js";
+import { catchAsync } from "../../app/utils/catch-async.js";
 // Signup handler
 export const signup = catchAsync(async (req, res, next) => {
     const { name, email, password, role } = req.body;

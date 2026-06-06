@@ -1,5 +1,5 @@
-import { ProjectsService } from "./projects.service";
-import { catchAsync } from "../../app/utils/catch-async";
+import { ProjectsService } from "./projects.service.js";
+import { catchAsync } from "../../app/utils/catch-async.js";
 export const createProject = catchAsync(async (req, res) => {
     const dto = req.body;
     const creatorId = req.user?.id;

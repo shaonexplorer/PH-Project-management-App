@@ -1,5 +1,5 @@
-import { prisma } from "../../app/lib/prisma";
-import { hashPassword, comparePassword } from "../../utils/password";
+import { prisma } from "../../app/lib/prisma.js";
+import { hashPassword, comparePassword } from "../../utils/password.js";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION;

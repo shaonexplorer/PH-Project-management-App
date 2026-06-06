@@ -1,6 +1,6 @@
-import { prisma } from "../../app/lib/prisma";
-import { hashPassword } from "../../utils/password";
-import { CreateProjectDto, UpdateProjectDto } from "./projects.dto";
+import { prisma } from "../../app/lib/prisma.js";
+import { hashPassword } from "../../utils/password.js";
+import { CreateProjectDto, UpdateProjectDto } from "./projects.dto.js";
 
 export const ProjectsService = {
   /**
@@ -18,7 +18,7 @@ export const ProjectsService = {
       // Validate project exists
       const project = await tx.project.findUnique({ where: { id: projectId } });
       if (!project) {
-        throw new Error('Project not found');
+        throw new Error("Project not found");
       }
 
       // Find or create the user
@@ -30,7 +30,7 @@ export const ProjectsService = {
             name,
             email,
             passwordHash,
-            role: 'Team_Member' as any,
+            role: "Team_Member" as any,
           },
         });
       }
@@ -40,7 +40,7 @@ export const ProjectsService = {
         where: { projectId_userId: { projectId, userId: user.id } },
       });
       if (existing) {
-        throw new Error('User is already a member of this project');
+        throw new Error("User is already a member of this project");
       }
 
       // Create the membership record

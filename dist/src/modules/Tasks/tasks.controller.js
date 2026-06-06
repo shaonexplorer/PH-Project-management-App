@@ -1,5 +1,5 @@
-import { TasksService } from "./tasks.service";
-import { catchAsync } from "../../app/utils/catch-async";
+import { TasksService } from "./tasks.service.js";
+import { catchAsync } from "../../app/utils/catch-async.js";
 // Create a new task
 export const createTask = catchAsync(async (req, res) => {
     const dto = req.body;

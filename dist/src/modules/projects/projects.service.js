@@ -1,5 +1,5 @@
-import { prisma } from "../../app/lib/prisma";
-import { hashPassword } from "../../utils/password";
+import { prisma } from "../../app/lib/prisma.js";
+import { hashPassword } from "../../utils/password.js";
 export const ProjectsService = {
     /**
      * Add a member to a project.
@@ -13,7 +13,7 @@ export const ProjectsService = {
             // Validate project exists
             const project = await tx.project.findUnique({ where: { id: projectId } });
             if (!project) {
-                throw new Error('Project not found');
+                throw new Error("Project not found");
             }
             // Find or create the user
             let user = await tx.user.findUnique({ where: { email } });
@@ -24,7 +24,7 @@ export const ProjectsService = {
                         name,
                         email,
                         passwordHash,
-                        role: 'Team_Member',
+                        role: "Team_Member",
                     },
                 });
             }
@@ -33,7 +33,7 @@ export const ProjectsService = {
                 where: { projectId_userId: { projectId, userId: user.id } },
             });
             if (existing) {
-                throw new Error('User is already a member of this project');
+                throw new Error("User is already a member of this project");
             }
             // Create the membership record
             return await tx.projectMember.create({

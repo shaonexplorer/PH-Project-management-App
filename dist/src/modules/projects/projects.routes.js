@@ -1,6 +1,6 @@
 import express from "express";
-import { projectsController } from "./projects.controller";
-import { authenticate } from "../../middleware/auth.middleware";
+import { projectsController } from "./projects.controller.js";
+import { authenticate } from "../../middleware/auth.middleware.js";
 const router = express.Router();
 // Define your project routes here
 router.get("/", (req, res) => {

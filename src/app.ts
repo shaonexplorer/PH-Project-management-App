@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Request, Response, NextFunction } from "express";
-import { projectsRouter } from "./modules/projects/projects.routes";
-import { authRouter } from "./modules/auth/auth.routes";
-import { tasksRouter } from "./modules/Tasks/tasks.routes";
+import { projectsRouter } from "./modules/projects/projects.routes.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
+import { tasksRouter } from "./modules/Tasks/tasks.routes.js";
 
 const app = express();
 

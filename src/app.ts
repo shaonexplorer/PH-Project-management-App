@@ -24,9 +24,9 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Project Management App API");
 });
 
-app.use("/api/v1/projects", projectsRouter);
-app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/tasks", tasksRouter);
+app.use("/api/v1/projects/", projectsRouter);
+app.use("/api/v1/auth/", authRouter);
+app.use("/api/v1/tasks/", tasksRouter);
 app.use("/api/v1/team-member/", teamMemberRouter);
 
 app.use((req: Request, res: Response, next: NextFunction) => {

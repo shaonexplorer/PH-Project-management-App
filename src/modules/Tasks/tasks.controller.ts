@@ -28,6 +28,17 @@ export const listTasks = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ tasks });
 });
 
+/**
+ * Get all tasks assigned to a specific user.
+ */
+export const getTasksByUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const tasks = await TasksService.getTasksByUser(userId);
+    res.status(200).json({ tasks });
+  },
+);
+
 // Update a task
 export const updateTask = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -57,6 +68,7 @@ export const tasksController = {
   createTask,
   getTask,
   listTasks,
+  getTasksByUser,
   updateTask,
   deleteTask,
   assignMember,

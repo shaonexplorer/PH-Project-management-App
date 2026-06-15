@@ -44,6 +44,21 @@ export const TasksService = {
   },
 
   /**
+   * Get all tasks assigned to a specific user.
+   */
+  async getTasksByUser(userId: string) {
+    // Find projects where this user is a member
+    const projects = await prisma.project.findMany({
+      where: { createdBy: userId },
+    });
+    const projectIds = projects.map((pm) => pm.id);
+    // Return tasks belonging to those projects
+    return prisma.task.findMany({
+      where: { projectId: { in: projectIds } },
+    });
+  },
+
+  /**
    * Update an existing task.
    */
   async updateTask(id: string, dto: UpdateTaskDto) {

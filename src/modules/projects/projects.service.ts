@@ -45,10 +45,67 @@ export const ProjectsService = {
 
       // Create the membership record
       return await tx.projectMember.create({
-        data: { projectId, userId: user.id },
+        data: { projectId, userId: user.id, name: user.name },
       });
     });
     return member;
+  },
+
+  /**
+   * Add an existing user to a project by userId.
+   * @param projectId ID of the project
+   * @param userId ID of the existing user to add
++   * @returns the created projectMember record
+   */
+  async addMemberByUserId(projectId: string, userId: string) {
+    const member = await prisma.$transaction(async (tx) => {
+      // Validate project exists
+      const project = await tx.project.findUnique({ where: { id: projectId } });
+      if (!project) {
+        throw new Error("Project not found");
+      }
+
+      // Fetch the user to get the name
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Check for existing membership
+      const existing = await tx.projectMember.findUnique({
+        where: { projectId_userId: { projectId, userId: user.id } },
+      });
+      if (existing) {
+        throw new Error("User is already a member of this project");
+      }
+
+      // Create the membership record
+      return await tx.projectMember.create({
+        data: { projectId, userId: user.id, name: user.name },
+      });
+    });
+    return member;
+  },
+
+  /**
+   * Get all projects.
+   * Returns an array of project records.
+   */
+  async getAllProjects() {
+    return prisma.project.findMany();
+  },
+
+  /**
+   * Get projects for the logged‑in user.
+   * Returns projects where the user is the creator or a member.
+   */
+  async getUserProjects(userId: string) {
+    return prisma.project.findMany({
+      where: {
+        OR: [{ createdBy: userId }, { members: { some: { userId } } }],
+      },
+      include: { members: true },
+    });
   },
 
   /**
@@ -56,7 +113,10 @@ export const ProjectsService = {
    * @param dto Data Transfer Object with project fields
    * @param creatorId Optional user ID of the creator (from auth middleware)
    */
-  async createProject(dto: CreateProjectDto, creatorId?: string) {
+  async createProject(
+    dto: CreateProjectDto & { memberId?: string; memberName?: string },
+    creatorId?: string,
+  ) {
     // Basic validation
     if (!dto.name || !dto.deadline) {
       throw new Error("Name and deadline are required");
@@ -70,6 +130,26 @@ export const ProjectsService = {
         ...(creatorId && { createdBy: creatorId }),
       },
     });
+
+    // If a memberId is provided, add the user as a project member
+    if (dto.memberId) {
+      const member = await prisma.user.findFirst({
+        where: { id: dto.memberId },
+      });
+
+      if (!member) {
+        throw Error("Member with the provided id not found");
+      }
+
+      await prisma.projectMember.create({
+        data: {
+          projectId: project.id,
+          userId: dto.memberId,
+          name: member?.name,
+        },
+      });
+    }
+
     return project;
   },
 

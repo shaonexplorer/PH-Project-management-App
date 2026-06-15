@@ -41,10 +41,31 @@ export const addMember = catchAsync(async (req: Request, res: Response) => {
   res.status(201).json({ member });
 });
 
+/**
+ * Add an existing user to a project by userId.
+ */
+export const addMemberByUserId = catchAsync(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const { userId } = req.body as { userId: string };
+  const member = await ProjectsService.addMemberByUserId(projectId, userId);
+  res.status(201).json({ member });
+});
+
+export const getUserProjects = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const projects = await ProjectsService.getUserProjects(userId);
+  res.status(200).json({ projects });
+});
+
 export const projectsController = {
   // existing methods will be added after this line
   createProject,
   updateProject,
   deleteProject,
   addMember,
+  addMemberByUserId,
+  getUserProjects,
 };

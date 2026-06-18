@@ -44,7 +44,7 @@ export const TasksService = {
   },
 
   /**
-   * Get all tasks assigned to a specific user.
+   * Get all tasks under project manager.
    */
   async getTasksByUser(userId: string) {
     // Find projects where this user is a member
@@ -55,6 +55,21 @@ export const TasksService = {
     // Return tasks belonging to those projects
     return prisma.task.findMany({
       where: { projectId: { in: projectIds } },
+      include: {
+        assignee: { select: { id: true, name: true, email: true, role: true } },
+      },
+    });
+  },
+
+  /**
+   * Get all tasks assigned to a specific user.
+   */
+  async getTasksByTeamMember(userId: string) {
+    return prisma.task.findMany({
+      where: { assignedMemberId: userId },
+      include: {
+        assignee: { select: { id: true, name: true, email: true, role: true } },
+      },
     });
   },
 

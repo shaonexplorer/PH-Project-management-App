@@ -39,6 +39,15 @@ export const getTasksByUser = catchAsync(
   },
 );
 
+// Get all tasks assigned to a specific team member (same as user)
+export const getTasksByTeamMember = catchAsync(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const tasks = await TasksService.getTasksByTeamMember(userId);
+    res.status(200).json({ tasks });
+  },
+);
+
 // Update a task
 export const updateTask = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -69,6 +78,7 @@ export const tasksController = {
   getTask,
   listTasks,
   getTasksByUser,
+  getTasksByTeamMember,
   updateTask,
   deleteTask,
   assignMember,

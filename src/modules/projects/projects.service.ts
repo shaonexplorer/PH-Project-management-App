@@ -88,24 +88,59 @@ export const ProjectsService = {
   },
 
   /**
-   * Get all projects.
-   * Returns an array of project records.
+   * Get all projects with completion percentage.
+   * Returns an array of project records with task counts and completion data.
    */
   async getAllProjects() {
-    return prisma.project.findMany();
+    const projects = await prisma.project.findMany({
+      include: {
+        members: true,
+      },
+    });
+
+    // Get completion percentage for each project
+    const projectsWithCompletion = await Promise.all(
+      projects.map(async (project) => {
+        const completionData = await this.getProjectCompletionPercentage(project.id);
+        return {
+          ...project,
+          completionPercentage: completionData.completionPercentage,
+          totalTasks: completionData.totalTasks,
+          completedTasks: completionData.completedTasks,
+        };
+      }),
+    );
+
+    return projectsWithCompletion;
   },
 
   /**
    * Get projects for the logged‑in user.
-   * Returns projects where the user is the creator or a member.
+   * Returns projects where the user is the creator or a member,
+   * with completion percentage included.
    */
   async getUserProjects(userId: string) {
-    return prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       where: {
         OR: [{ createdBy: userId }, { members: { some: { userId } } }],
       },
       include: { members: true },
     });
+
+    // Get completion percentage for each project
+    const projectsWithCompletion = await Promise.all(
+      projects.map(async (project) => {
+        const completionData = await this.getProjectCompletionPercentage(project.id);
+        return {
+          ...project,
+          completionPercentage: completionData.completionPercentage,
+          totalTasks: completionData.totalTasks,
+          completedTasks: completionData.completedTasks,
+        };
+      }),
+    );
+
+    return projectsWithCompletion;
   },
 
   /**
@@ -182,5 +217,80 @@ export const ProjectsService = {
   async deleteProject(id: string) {
     const project = await prisma.project.delete({ where: { id } });
     return project;
+  },
+
+  /**
+   * Get project completion percentage.
+   * Calculated as (completed tasks / total tasks) * 100.
+   * Returns 0 if project has no tasks.
+   * @param projectId ID of the project
+   */
+  async getProjectCompletionPercentage(projectId: string) {
+    // Validate project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    // Get total tasks count and completed tasks count
+    const [totalTasks, completedTasks] = await prisma.$transaction([
+      prisma.task.count({ where: { projectId } }),
+      prisma.task.count({
+        where: {
+          projectId,
+          status: "Completed",
+        },
+      }),
+    ]);
+
+    // Handle edge case of no tasks
+    if (totalTasks === 0) {
+      return {
+        projectId,
+        totalTasks: 0,
+        completedTasks: 0,
+        completionPercentage: 0,
+      };
+    }
+
+    const completionPercentage = Math.round((completedTasks / totalTasks) * 100);
+
+    return {
+      projectId,
+      totalTasks,
+      completedTasks,
+      completionPercentage,
+    };
+  },
+
+  /**
+   * Get a single project by ID with completion percentage included.
+   */
+  async getProjectById(id: string) {
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        members: true,
+        _count: {
+          select: { tasks: true },
+        },
+      },
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    // Get completion percentage
+    const completionData = await this.getProjectCompletionPercentage(id);
+
+    return {
+      ...project,
+      completionPercentage: completionData.completionPercentage,
+      totalTasks: completionData.totalTasks,
+      completedTasks: completionData.completedTasks,
+    };
   },
 };

@@ -103,6 +103,7 @@ export const ProjectScalarFieldEnum = {
     updatedAt: 'updatedAt'
 };
 export const ProjectMemberScalarFieldEnum = {
+    name: 'name',
     projectId: 'projectId',
     userId: 'userId',
     joinedAt: 'joinedAt'

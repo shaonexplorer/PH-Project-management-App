@@ -60,6 +60,24 @@ export const getUserProjects = catchAsync(async (req: Request, res: Response) =>
   res.status(200).json({ projects });
 });
 
+/**
+ * Get a single project by ID with completion percentage.
+ */
+export const getProject = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const project = await ProjectsService.getProjectById(id);
+  res.status(200).json({ project });
+});
+
+/**
+ * Get project completion percentage.
+ */
+export const getProjectCompletion = catchAsync(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const completionData = await ProjectsService.getProjectCompletionPercentage(projectId);
+  res.status(200).json({ completionData });
+});
+
 export const projectsController = {
   // existing methods will be added after this line
   createProject,
@@ -68,4 +86,6 @@ export const projectsController = {
   addMember,
   addMemberByUserId,
   getUserProjects,
+  getProject,
+  getProjectCompletion,
 };

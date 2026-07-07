@@ -68,4 +68,25 @@ src/
          └─ projects.service.ts
 ```
 
+## API Endpoints
+
+### Projects Routes (`/api/v1/projects`)
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| GET | `/` | Get all projects with completion percentage | No |
+| GET | `/my` | Get user's projects with completion percentage | Yes |
+| GET | `/:id` | Get single project with completion percentage | Yes |
+| GET | `/:projectId/completion` | Get completion percentage only | Yes |
+| POST | `/create` | Create a new project | Yes |
+| POST | `/:projectId/members` | Add member by email/password | Yes |
+| POST | `/:projectId/members/user` | Add existing user to project | Yes |
+| PUT | `/:id` | Update project | Yes |
+| DELETE | `/:id` | Delete project | Yes |
+
+### Project Completion Percentage
+- Calculated as: `(completed tasks / total tasks) * 100`
+- Returns 0% if project has no tasks
+- Included in: `getAllProjects()`, `getUserProjects()`, `getProject()`, and dedicated `/completion` endpoint
+- Response fields: `completionPercentage`, `totalTasks`, `completedTasks`
+
 Feel free to extend this CLAUDE.md as the project evolves (e.g., adding linting, testing frameworks, or additional domains).

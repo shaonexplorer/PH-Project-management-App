@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { projectsRouter } from "./modules/projects/projects.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { tasksRouter } from "./modules/Tasks/tasks.routes.js";
+import { teamMemberRouter } from "./modules/Team-member/team-member.router.js";
 const app = express();
 app.use(cors({
     origin: [],
@@ -15,9 +16,10 @@ app.use(cookieParser());
 app.get("/", (req, res) => {
     res.send("Welcome to the Project Management App API");
 });
-app.use("/api/v1/projects", projectsRouter);
-app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/tasks", tasksRouter);
+app.use("/api/v1/projects/", projectsRouter);
+app.use("/api/v1/auth/", authRouter);
+app.use("/api/v1/tasks/", tasksRouter);
+app.use("/api/v1/team-member/", teamMemberRouter);
 app.use((req, res, next) => {
     res.status(404).json({
         status: 404,

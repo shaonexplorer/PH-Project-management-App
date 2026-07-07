@@ -18,7 +18,9 @@ export const AuthService = {
    * Register a new user.
    * Returns the created user object without the password hash.
    */
-  async register(data: RegisterDto): Promise<Omit<User, "passwordHash">> {
+  async register(
+    data: RegisterDto,
+  ): Promise<{ token: string; user: Omit<User, "passwordHash"> }> {
     const { name, email, password, role } = data;
     let passwordHash;
     if (password) {
@@ -34,10 +36,16 @@ export const AuthService = {
         role: role as any,
       },
     });
+
+    const token = jwt.sign(
+      { sub: user.id, role: user.role },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "24h" },
+    );
     // Omit passwordHash before returning
     // @ts-ignore – Prisma type includes passwordHash, we remove it manually
     const { passwordHash: _ph, ...rest } = user as any;
-    return rest;
+    return { user: rest, token };
   },
 
   /**

@@ -74,6 +74,19 @@ src/
 
 ## API Endpoints
 
+### Auth Routes (`/api/v1/auth`)
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| POST | `/signup` | Register a new user | No |
+| POST | `/login` | Login and receive JWT token | No |
+| POST | `/logout` | Clear authentication cookies | No |
+
+### Authentication
+- **Login** returns a JWT token which is stored in an HTTP-only cookie named `accessToken`
+- **Cookies set on login**: `accessToken`, `userEmail`, `userName`, `userRole`, `userId`
+- **Middleware** (`authenticate`) checks for `Authorization: Bearer <token>` header or `accessToken` cookie
+- **Protected routes** use the authenticate middleware
+
 ### Projects Routes (`/api/v1/projects`)
 | Method | Path | Description | Auth |
 |--------|------|-------------|------|

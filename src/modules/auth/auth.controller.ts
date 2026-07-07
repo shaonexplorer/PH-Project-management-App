@@ -6,8 +6,13 @@ import { catchAsync } from "../../app/utils/catch-async.js";
 export const signup = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password, role } = req.body;
-    const user = await AuthService.register({ name, email, password, role });
-    res.status(201).json({ user });
+    const { user, token } = await AuthService.register({
+      name,
+      email,
+      password,
+      role,
+    });
+    res.status(201).json({ token, user });
   },
 );
 
@@ -22,7 +27,13 @@ export const login = catchAsync(
 
 // Logout handler - clears auth cookies
 export const logout = (req: any, res: any) => {
-  const cookieNames = ["accessToken", "userEmail", "userName", "userRole", "userId"];
+  const cookieNames = [
+    "accessToken",
+    "userEmail",
+    "userName",
+    "userRole",
+    "userId",
+  ];
   cookieNames.forEach((name) => {
     res.clearCookie(name, {
       path: "/",

@@ -20,7 +20,22 @@ export const login = catchAsync(
   },
 );
 
+// Logout handler - clears auth cookies
+export const logout = (req: any, res: any) => {
+  const cookieNames = ["accessToken", "userEmail", "userName", "userRole", "userId"];
+  cookieNames.forEach((name) => {
+    res.clearCookie(name, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  });
+  res.status(200).json({ success: true, message: "Logged out successfully" });
+};
+
 export const authController = {
   signup,
   login,
+  logout,
 };

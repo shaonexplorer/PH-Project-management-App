@@ -36,6 +36,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Contains the core business logic interacting with Prisma.
   - Example: `CreateProject` creates a new project record using `prisma.project.create`.
 
+- **Tasks Service** – `src/modules/Tasks/tasks.service.ts`
+  - Handles task CRUD operations and project status updates.
+  - Automatically updates project status to `Completed` when all tasks are marked as completed.
+
 - **Database access** – `src/app/lib/prisma.ts`
   - Instantiates a `PrismaClient` with a PostgreSQL adapter using the `DATABASE_URL` environment variable.
   - Exports the shared `prisma` instance used across services.
@@ -86,7 +90,16 @@ src/
 ### Project Completion Percentage
 - Calculated as: `(completed tasks / total tasks) * 100`
 - Returns 0% if project has no tasks
+- Automatically updates project status to `Completed` when completion reaches 100%
 - Included in: `getAllProjects()`, `getUserProjects()`, `getProject()`, and dedicated `/completion` endpoint
 - Response fields: `completionPercentage`, `totalTasks`, `completedTasks`
+
+### Task Status Auto-Update
+When a task's status is updated via `PUT /api/v1/tasks/:id`:
+- The system checks the project's current status and task completion state
+- If **all tasks are completed**: project status is set to `Completed`
+- If **some tasks remain uncompleted** and project was `Completed`: project status reverts to `Active`
+- This ensures real-time synchronization between task progress and project status
+- Works in both directions: task completion → project completion, and task un-completion → project re-activation
 
 Feel free to extend this CLAUDE.md as the project evolves (e.g., adding linting, testing frameworks, or additional domains).

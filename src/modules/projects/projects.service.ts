@@ -222,7 +222,7 @@ export const ProjectsService = {
   /**
    * Get project completion percentage.
    * Calculated as (completed tasks / total tasks) * 100.
-   * Returns 0 if project has no tasks.
+   * Automatically updates project status to "Completed" when 100% done.
    * @param projectId ID of the project
    */
   async getProjectCompletionPercentage(projectId: string) {
@@ -256,6 +256,14 @@ export const ProjectsService = {
     }
 
     const completionPercentage = Math.round((completedTasks / totalTasks) * 100);
+
+    // Update project status to Completed if 100% done and not already completed
+    if (completionPercentage === 100 && project.status !== "Completed") {
+      await prisma.project.update({
+        where: { id: projectId },
+        data: { status: "Completed" },
+      });
+    }
 
     return {
       projectId,

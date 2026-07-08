@@ -60,7 +60,7 @@ export const TeamMemberService = {
     return prisma.projectMember.findMany({
       where: { projectId },
       // Include user details for convenience
-      // include: { user: true },
+      include: { user: true },
     });
   },
 };

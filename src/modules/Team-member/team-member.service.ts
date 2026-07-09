@@ -63,4 +63,51 @@ export const TeamMemberService = {
       include: { user: true },
     });
   },
+
+  /**
+   * Get all members under a specific Project Manager, excluding members
+   * already assigned to a specific project.
+   * @param managerId ID of the Project Manager
+   * @param excludeProjectId Optional project ID to exclude members already in this project
+   */
+  async getMembersByProjectManager(
+    managerId: string,
+    excludeProjectId?: string,
+  ) {
+    // Get all project memberships for this Project Manager
+    const allMemberships = await prisma.projectManagerMembers.findMany({
+      where: { projectManagerId: managerId },
+      include: {
+        member: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { assignedAt: "desc" },
+    });
+
+    // If no projectId to exclude, return all members with user details
+    if (!excludeProjectId) {
+      return allMemberships.map((membership) => ({
+        ...membership.member,
+        assignedAt: membership.assignedAt,
+      }));
+    }
+
+    // Get members already in the excluded project
+    const membersInProject = await prisma.projectMember.findMany({
+      where: { projectId: excludeProjectId },
+      select: { userId: true },
+    });
+
+    const excludedUserIds = new Set(membersInProject.map((m) => m.userId));
+
+    // Filter out members already in the excluded project
+    return allMemberships
+      .filter((membership) => !excludedUserIds.has(membership.memberId))
+      .map((membership) => membership.member);
+  },
 };

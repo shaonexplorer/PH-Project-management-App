@@ -33,12 +33,12 @@ import { AddProjectMemberDto } from "./projects.dto";
 export const addMember = catchAsync(async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const { name, email, password } = req.body as AddProjectMemberDto;
-  const member = await ProjectsService.addMember(projectId, {
+  const result = await ProjectsService.addMember(projectId, {
     name,
     email,
     password,
   });
-  res.status(201).json({ member });
+  res.status(201).json({ projectMember: result.projectMember, projectManagerMembers: result.projectManagerMembers });
 });
 
 /**
@@ -47,8 +47,8 @@ export const addMember = catchAsync(async (req: Request, res: Response) => {
 export const addMemberByUserId = catchAsync(async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const { userId } = req.body as { userId: string };
-  const member = await ProjectsService.addMemberByUserId(projectId, userId);
-  res.status(201).json({ member });
+  const result = await ProjectsService.addMemberByUserId(projectId, userId);
+  res.status(201).json({ projectMember: result.projectMember, projectManagerMembers: result.projectManagerMembers });
 });
 
 export const getUserProjects = catchAsync(async (req: Request, res: Response) => {
@@ -78,6 +78,22 @@ export const getProjectCompletion = catchAsync(async (req: Request, res: Respons
   res.status(200).json({ completionData });
 });
 
+/**
+ * Get all members assigned to a specific Project Manager.
+ * Optionally excludes members already assigned to a specific project.
+ */
+export const getMembersByProjectManager = catchAsync(
+  async (req: Request, res: Response) => {
+    const { managerId } = req.params;
+    const { projectId } = req.query;
+    const members = await ProjectsService.getMembersByProjectManager(
+      managerId,
+      projectId as string | undefined,
+    );
+    res.status(200).json({ members });
+  }
+);
+
 export const projectsController = {
   // existing methods will be added after this line
   createProject,
@@ -88,4 +104,5 @@ export const projectsController = {
   getUserProjects,
   getProject,
   getProjectCompletion,
+  getMembersByProjectManager,
 };

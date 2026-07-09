@@ -26,6 +26,22 @@ export const getMembersByProjectId = catchAsync(async (req: Request, res: Respon
   res.status(200).json({ members });
 });
 
+/**
+ * Get all members under a specific Project Manager.
+ * Optionally exclude members already assigned to a specific project.
+ */
+export const getMembersByProjectManager = catchAsync(
+  async (req: Request, res: Response) => {
+    const { managerId } = req.params;
+    const { excludeProjectId } = req.query;
+    const members = await TeamMemberService.getMembersByProjectManager(
+      managerId,
+      excludeProjectId as string | undefined,
+    );
+    res.status(200).json({ members });
+  }
+);
+
 /** Create a new team member */
 export const createMember = catchAsync(async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -57,6 +73,7 @@ export const teamMemberController = {
   listMembers,
   getMember,
   getMembersByProjectId,
+  getMembersByProjectManager,
   createMember,
   updateMember,
   deleteMember,

@@ -10,6 +10,9 @@ router.get("/", authenticate, teamMemberController.listMembers);
 // Get team members for a specific project
 router.get("/project/:projectId/members", authenticate, teamMemberController.getMembersByProjectId);
 
+// Get members by Project Manager (with optional project exclusion)
+router.get("/manager/:managerId/members", authenticate, teamMemberController.getMembersByProjectManager);
+
 // Get a single team member by ID
 router.get("/:id", authenticate, teamMemberController.getMember);
 

@@ -57,6 +57,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Environment**: Ensure a `.env` file with at least `PORT` and `DATABASE_URL` is present before starting the server.
 - **Testing**: Add a testing framework (e.g., Jest) and update the `test` script accordingly.
 
+## Documentation Research
+
+### Use context7 for library documentation
+- When asking about libraries, frameworks, SDKs, APIs, or CLI tools, use `npx ctx7@latest library <name>` to fetch current documentation
+- **Get updated docs**: Use `npx ctx7@latest docs <libraryId>` to get specific documentation for the library
+- This ensures you get the most recent API syntax, configuration, and best practices
+
+### Use shadcn MCP/skill for component documentation
+- **Check installed components first**: Use `npx shadcn@latest info` to see what components are already installed
+- **Get component docs**: Use `npx shadcn@latest docs <component>` to get documentation URLs for any component
+- **Add new components**: Use `npx shadcn@latest add <component>` to add new UI components to the project
+- **Search registries**: Use `npx shadcn@latest search <query>` to find components in configured registries
+
 ## Project Structure Snapshot
 ```
 src/

@@ -33,13 +33,66 @@ import { AddProjectMemberDto } from "./projects.dto";
 export const addMember = catchAsync(async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const { name, email, password } = req.body as AddProjectMemberDto;
-  const member = await ProjectsService.addMember(projectId, {
+  const result = await ProjectsService.addMember(projectId, {
     name,
     email,
     password,
   });
-  res.status(201).json({ member });
+  res.status(201).json({ projectMember: result.projectMember, projectManagerMembers: result.projectManagerMembers });
 });
+
+/**
+ * Add an existing user to a project by userId.
+ */
+export const addMemberByUserId = catchAsync(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const { userId } = req.body as { userId: string };
+  const result = await ProjectsService.addMemberByUserId(projectId, userId);
+  res.status(201).json({ projectMember: result.projectMember, projectManagerMembers: result.projectManagerMembers });
+});
+
+export const getUserProjects = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const projects = await ProjectsService.getUserProjects(userId);
+  res.status(200).json({ projects });
+});
+
+/**
+ * Get a single project by ID with completion percentage.
+ */
+export const getProject = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const project = await ProjectsService.getProjectById(id);
+  res.status(200).json({ project });
+});
+
+/**
+ * Get project completion percentage.
+ */
+export const getProjectCompletion = catchAsync(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const completionData = await ProjectsService.getProjectCompletionPercentage(projectId);
+  res.status(200).json({ completionData });
+});
+
+/**
+ * Get all members assigned to a specific Project Manager.
+ * Optionally excludes members already assigned to a specific project.
+ */
+export const getMembersByProjectManager = catchAsync(
+  async (req: Request, res: Response) => {
+    const { managerId } = req.params;
+    const { projectId } = req.query;
+    const members = await ProjectsService.getMembersByProjectManager(
+      managerId,
+      projectId as string | undefined,
+    );
+    res.status(200).json({ members });
+  }
+);
 
 export const projectsController = {
   // existing methods will be added after this line
@@ -47,4 +100,9 @@ export const projectsController = {
   updateProject,
   deleteProject,
   addMember,
+  addMemberByUserId,
+  getUserProjects,
+  getProject,
+  getProjectCompletion,
+  getMembersByProjectManager,
 };

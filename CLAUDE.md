@@ -36,6 +36,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Contains the core business logic interacting with Prisma.
   - Example: `CreateProject` creates a new project record using `prisma.project.create`.
 
+- **Tasks Service** – `src/modules/Tasks/tasks.service.ts`
+  - Handles task CRUD operations and project status updates.
+  - Automatically updates project status to `Completed` when all tasks are marked as completed.
+
 - **Database access** – `src/app/lib/prisma.ts`
   - Instantiates a `PrismaClient` with a PostgreSQL adapter using the `DATABASE_URL` environment variable.
   - Exports the shared `prisma` instance used across services.
@@ -53,6 +57,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Environment**: Ensure a `.env` file with at least `PORT` and `DATABASE_URL` is present before starting the server.
 - **Testing**: Add a testing framework (e.g., Jest) and update the `test` script accordingly.
 
+## Documentation Research
+
+### Use context7 for library documentation
+- When asking about libraries, frameworks, SDKs, APIs, or CLI tools, use `npx ctx7@latest library <name>` to fetch current documentation
+- **Get updated docs**: Use `npx ctx7@latest docs <libraryId>` to get specific documentation for the library
+- This ensures you get the most recent API syntax, configuration, and best practices
+
+### Use shadcn MCP/skill for component documentation
+- **Check installed components first**: Use `npx shadcn@latest info` to see what components are already installed
+- **Get component docs**: Use `npx shadcn@latest docs <component>` to get documentation URLs for any component
+- **Add new components**: Use `npx shadcn@latest add <component>` to add new UI components to the project
+- **Search registries**: Use `npx shadcn@latest search <query>` to find components in configured registries
+
 ## Project Structure Snapshot
 ```
 src/
@@ -67,5 +84,48 @@ src/
          ├─ projects.controller.ts
          └─ projects.service.ts
 ```
+
+## API Endpoints
+
+### Auth Routes (`/api/v1/auth`)
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| POST | `/signup` | Register a new user | No |
+| POST | `/login` | Login and receive JWT token | No |
+| POST | `/logout` | Clear authentication cookies | No |
+
+### Authentication
+- **Login** returns a JWT token which is stored in an HTTP-only cookie named `accessToken`
+- **Cookies set on login**: `accessToken`, `userEmail`, `userName`, `userRole`, `userId`
+- **Middleware** (`authenticate`) checks for `Authorization: Bearer <token>` header or `accessToken` cookie
+- **Protected routes** use the authenticate middleware
+
+### Projects Routes (`/api/v1/projects`)
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| GET | `/` | Get all projects with completion percentage | No |
+| GET | `/my` | Get user's projects with completion percentage | Yes |
+| GET | `/:id` | Get single project with completion percentage | Yes |
+| GET | `/:projectId/completion` | Get completion percentage only | Yes |
+| POST | `/create` | Create a new project | Yes |
+| POST | `/:projectId/members` | Add member by email/password | Yes |
+| POST | `/:projectId/members/user` | Add existing user to project | Yes |
+| PUT | `/:id` | Update project | Yes |
+| DELETE | `/:id` | Delete project | Yes |
+
+### Project Completion Percentage
+- Calculated as: `(completed tasks / total tasks) * 100`
+- Returns 0% if project has no tasks
+- Automatically updates project status to `Completed` when completion reaches 100%
+- Included in: `getAllProjects()`, `getUserProjects()`, `getProject()`, and dedicated `/completion` endpoint
+- Response fields: `completionPercentage`, `totalTasks`, `completedTasks`
+
+### Task Status Auto-Update
+When a task's status is updated via `PUT /api/v1/tasks/:id`:
+- The system checks the project's current status and task completion state
+- If **all tasks are completed**: project status is set to `Completed`
+- If **some tasks remain uncompleted** and project was `Completed`: project status reverts to `Active`
+- This ensures real-time synchronization between task progress and project status
+- Works in both directions: task completion → project completion, and task un-completion → project re-activation
 
 Feel free to extend this CLAUDE.md as the project evolves (e.g., adding linting, testing frameworks, or additional domains).

@@ -51,13 +51,17 @@ model User {
   role          UserRole        @default(Team_Member)
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
-  
+
   // Relations
-  createdProjects Project[]     @relation("ProjectCreator")
-  projects        ProjectMember[]
-  assignedTasks   Task[]          @relation("TaskAssignee")
-  comments        Comment[]
-  activityLogs    ActivityLog[]
+  createdProjects        Project[]               @relation("ProjectCreator")
+  projects               ProjectMember[]
+  assignedTasks          Task[]                  @relation("TaskAssignee")
+  comments               Comment[]
+  activityLogs           ActivityLog[]
+
+  // NEW: Member assignments - tracks which Project Manager each team member belongs to
+  assignedAsMember       ProjectManagerMembers[] @relation("MemberAssignment")
+  managesMembers         ProjectManagerMembers[] @relation("ManagerOfMembers")
 
   @@map("users")
   @@index([name]) // Optimize member-wise search
@@ -86,6 +90,7 @@ model Project {
 
 // Explicit Many-to-Many Table for Projects and Members
 model ProjectMember {
+  name      String?   @db.VarChar(100)
   projectId String   @map("project_id")
   userId    String   @map("user_id")
   joinedAt  DateTime @default(now()) @map("joined_at")
@@ -96,6 +101,23 @@ model ProjectMember {
 
   @@id([projectId, userId])
   @@map("project_members")
+}
+
+// Tracks team members assigned to Project Managers
+// Ensures each member can only belong to ONE Project Manager
+model ProjectManagerMembers {
+  id               String   @id @default(uuid())
+  memberId         String   @map("member_id")
+  projectManagerId String   @map("project_manager_id")
+  assignedAt       DateTime @default(now()) @map("assigned_at")
+
+  // Relations
+  member         User @relation("MemberAssignment", fields: [memberId], references: [id], onDelete: Cascade)
+  projectManager User @relation("ManagerOfMembers", fields: [projectManagerId], references: [id], onDelete: SetNull)
+
+  // Ensures a member can only be assigned to ONE Project Manager
+  @@unique([memberId, projectManagerId], name: "member_unique_per_manager")
+  @@map("project_manager_members")
 }
 
 model Task {

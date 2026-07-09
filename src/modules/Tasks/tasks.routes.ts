@@ -12,6 +12,11 @@ router.get("/:id", tasksController.getTask);
 
 // List tasks (optional projectId query param)
 router.get("/", tasksController.listTasks);
+// Get tasks for a specific user
+router.get("/user/:userId", tasksController.getTasksByUser);
+
+// Get tasks for a specific team member (assignedMemberId)
+router.get("/team/:userId", tasksController.getTasksByTeamMember);
 
 // Update a task (protected)
 router.put("/:id", authenticate, tasksController.updateTask);

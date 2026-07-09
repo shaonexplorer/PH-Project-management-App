@@ -9,7 +9,7 @@ export const ProjectsService = {
     async addMember(projectId, dto) {
         const { name, email, password } = dto;
         // Perform all operations atomically within a transaction
-        const member = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx) => {
             // Validate project exists
             const project = await tx.project.findUnique({ where: { id: projectId } });
             if (!project) {
@@ -28,7 +28,24 @@ export const ProjectsService = {
                     },
                 });
             }
-            // Check for existing membership
+            // Check if user is already assigned to a DIFFERENT Project Manager
+            // (same PM is allowed - member can be in multiple projects under same PM)
+            const existingAssignment = await tx.projectManagerMembers.findFirst({
+                where: { memberId: user.id },
+            });
+            if (existingAssignment && existingAssignment.projectManagerId !== project.createdBy) {
+                throw new Error(`This user is already assigned to a different Project Manager: ${existingAssignment.projectManagerId}`);
+            }
+            // If member doesn't have an assignment yet, create one for this PM
+            if (!existingAssignment) {
+                await tx.projectManagerMembers.create({
+                    data: {
+                        memberId: user.id,
+                        projectManagerId: project.createdBy,
+                    },
+                });
+            }
+            // Check for existing membership in this project
             const existing = await tx.projectMember.findUnique({
                 where: { projectId_userId: { projectId, userId: user.id } },
             });
@@ -36,20 +53,21 @@ export const ProjectsService = {
                 throw new Error("User is already a member of this project");
             }
             // Create the membership record
-            return await tx.projectMember.create({
+            const projectMember = await tx.projectMember.create({
                 data: { projectId, userId: user.id, name: user.name },
             });
+            return { projectMember, projectManagerMembers: existingAssignment };
         });
-        return member;
+        return result;
     },
     /**
      * Add an existing user to a project by userId.
      * @param projectId ID of the project
      * @param userId ID of the existing user to add
-  +   * @returns the created projectMember record
+     * @returns the created projectMember record
      */
     async addMemberByUserId(projectId, userId) {
-        const member = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx) => {
             // Validate project exists
             const project = await tx.project.findUnique({ where: { id: projectId } });
             if (!project) {
@@ -60,7 +78,24 @@ export const ProjectsService = {
             if (!user) {
                 throw new Error("User not found");
             }
-            // Check for existing membership
+            // Check if user is already assigned to a DIFFERENT Project Manager
+            // (same PM is allowed - member can be in multiple projects under same PM)
+            const existingAssignment = await tx.projectManagerMembers.findFirst({
+                where: { memberId: user.id },
+            });
+            if (existingAssignment && existingAssignment.projectManagerId !== project.createdBy) {
+                throw new Error(`This user is already assigned to a different Project Manager: ${existingAssignment.projectManagerId}`);
+            }
+            // If member doesn't have an assignment yet, create one for this PM
+            if (!existingAssignment) {
+                await tx.projectManagerMembers.create({
+                    data: {
+                        memberId: user.id,
+                        projectManagerId: project.createdBy,
+                    },
+                });
+            }
+            // Check for existing membership in this project
             const existing = await tx.projectMember.findUnique({
                 where: { projectId_userId: { projectId, userId: user.id } },
             });
@@ -68,11 +103,12 @@ export const ProjectsService = {
                 throw new Error("User is already a member of this project");
             }
             // Create the membership record
-            return await tx.projectMember.create({
+            const projectMember = await tx.projectMember.create({
                 data: { projectId, userId: user.id, name: user.name },
             });
+            return { projectMember, projectManagerMembers: existingAssignment };
         });
-        return member;
+        return result;
     },
     /**
      * Get all projects with completion percentage.
@@ -146,6 +182,14 @@ export const ProjectsService = {
             if (!member) {
                 throw Error("Member with the provided id not found");
             }
+            // Check if user is already assigned to a DIFFERENT Project Manager
+            // (same PM is allowed - member can be in multiple projects under same PM)
+            const existingAssignment = await prisma.projectManagerMembers.findFirst({
+                where: { memberId: dto.memberId },
+            });
+            if (existingAssignment && existingAssignment.projectManagerId !== creatorId) {
+                throw new Error(`This user is already assigned to a different Project Manager: ${existingAssignment.projectManagerId}`);
+            }
             await prisma.projectMember.create({
                 data: {
                     projectId: project.id,
@@ -153,6 +197,15 @@ export const ProjectsService = {
                     name: member?.name,
                 },
             });
+            // If member doesn't have an assignment yet, create one for this PM
+            if (!existingAssignment) {
+                await prisma.projectManagerMembers.create({
+                    data: {
+                        memberId: dto.memberId,
+                        projectManagerId: creatorId,
+                    },
+                });
+            }
         }
         return project;
     },
@@ -257,5 +310,39 @@ export const ProjectsService = {
             totalTasks: completionData.totalTasks,
             completedTasks: completionData.completedTasks,
         };
+    },
+    /**
+     * Get all members assigned to a specific Project Manager.
+     * Optionally excludes members already assigned to a specific project.
+     * @param managerId ID of the Project Manager
+     * @param excludeProjectId Optional project ID to exclude members already in this project
+     */
+    async getMembersByProjectManager(managerId, excludeProjectId) {
+        // Get all project memberships for this Project Manager
+        const allMemberships = await prisma.projectManagerMembers.findMany({
+            where: { projectManagerId: managerId },
+            include: {
+                member: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: { assignedAt: "desc" },
+        });
+        // If no projectId to exclude, return all members
+        if (!excludeProjectId) {
+            return allMemberships;
+        }
+        // Get members already in the excluded project
+        const membersInProject = await prisma.projectMember.findMany({
+            where: { projectId: excludeProjectId },
+            select: { userId: true },
+        });
+        const excludedUserIds = new Set(membersInProject.map((m) => m.userId));
+        // Filter out members already in the excluded project
+        return allMemberships.filter((membership) => !excludedUserIds.has(membership.memberId));
     },
 };

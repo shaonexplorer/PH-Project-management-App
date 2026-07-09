@@ -25,10 +25,11 @@ export const AuthService = {
                 role: role,
             },
         });
+        const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "24h" });
         // Omit passwordHash before returning
         // @ts-ignore – Prisma type includes passwordHash, we remove it manually
         const { passwordHash: _ph, ...rest } = user;
-        return rest;
+        return { user: rest, token };
     },
     /**
      * Authenticate a user and return a JWT token plus user data.

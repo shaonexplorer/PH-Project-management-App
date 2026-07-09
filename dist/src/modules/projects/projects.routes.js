@@ -14,6 +14,8 @@ router.get("/my", authenticate, projectsController.getUserProjects);
 router.get("/:id", authenticate, projectsController.getProject);
 // Get project completion percentage
 router.get("/:projectId/completion", authenticate, projectsController.getProjectCompletion);
+// Get all members under a specific Project Manager
+router.get("/members/:managerId", authenticate, projectsController.getMembersByProjectManager);
 router.post("/create", authenticate, projectsController.createProject);
 router.post("/:projectId/members", authenticate, projectsController.addMember);
 router.post("/:projectId/members/user", authenticate, projectsController.addMemberByUserId);

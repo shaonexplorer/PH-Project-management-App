@@ -42,6 +42,7 @@ export const ModelName = {
     User: 'User',
     Project: 'Project',
     ProjectMember: 'ProjectMember',
+    ProjectManagerMembers: 'ProjectManagerMembers',
     Task: 'Task',
     Comment: 'Comment',
     ActivityLog: 'ActivityLog'
@@ -79,6 +80,12 @@ export const ProjectMemberScalarFieldEnum = {
     projectId: 'projectId',
     userId: 'userId',
     joinedAt: 'joinedAt'
+};
+export const ProjectManagerMembersScalarFieldEnum = {
+    id: 'id',
+    memberId: 'memberId',
+    projectManagerId: 'projectManagerId',
+    assignedAt: 'assignedAt'
 };
 export const TaskScalarFieldEnum = {
     id: 'id',
